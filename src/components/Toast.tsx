@@ -14,7 +14,7 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
   return (
     <ToastContext.Provider value={value}>
       {children}
-      {message && <div className="fixed bottom-5 right-5 z-[60] rounded-md bg-slate-950 px-4 py-3 text-sm font-semibold text-white shadow-soft">{message}</div>}
+      {message && <div className="fixed inset-x-3 bottom-3 z-[60] rounded-md bg-slate-950 px-4 py-3 text-sm font-semibold text-white shadow-soft sm:inset-x-auto sm:bottom-5 sm:right-5">{message}</div>}
     </ToastContext.Provider>
   );
 };

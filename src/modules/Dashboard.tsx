@@ -80,10 +80,10 @@ export const Dashboard = ({ setPage }: { setPage: (page: PageKey) => void }) => 
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div>
             <p className="text-xs font-bold uppercase text-brand-700">Today command center</p>
-            <h2 className="mt-1 text-2xl font-bold text-slate-950">Keep sales, collections, stock, and routes moving.</h2>
+            <h2 className="mt-1 text-xl font-bold text-slate-950 sm:text-2xl">Keep sales, collections, stock, and routes moving.</h2>
             <p className="mt-1 text-sm text-slate-500">Focus first on unpaid invoices, low stock, and delivery status before the next route leaves.</p>
           </div>
-          <div className="grid gap-2 sm:grid-cols-4 xl:min-w-[620px]">
+          <div className="grid gap-2 sm:grid-cols-2 xl:min-w-[620px] xl:grid-cols-4">
             <button onClick={() => setPage('invoices')} className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-left text-sm font-semibold text-slate-700 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700"><ReceiptText className="mb-2" size={18} />New invoice</button>
             <button onClick={() => setPage('payments')} className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-left text-sm font-semibold text-slate-700 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700"><CircleDollarSign className="mb-2" size={18} />Collect cash</button>
             <button onClick={() => setPage('inventory')} className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-left text-sm font-semibold text-slate-700 transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700"><PackagePlus className="mb-2" size={18} />Stock check</button>
@@ -105,7 +105,7 @@ export const Dashboard = ({ setPage }: { setPage: (page: PageKey) => void }) => 
             {(['pending', 'loaded', 'delivered', 'failed', 'returned'] as const).map((status) => <div key={status} className="rounded-md border border-slate-200 bg-slate-50 p-3"><p className="text-xs font-bold uppercase text-slate-500">{status}</p><p className="text-2xl font-bold text-slate-950">{data.deliveries.filter((d) => d.status === status).length}</p></div>)}
           </div>
           <h2 className="mb-3 mt-5 font-bold text-slate-950">Recent payments</h2>
-          <div className="grid gap-2">{data.payments.slice(0, 5).map((p) => <div key={p.id} className="flex justify-between rounded-md bg-slate-50 p-3 text-sm"><span>{p.customerName}</span><strong>{money(Number(p.amount ?? 0))}</strong></div>)}</div>
+          <div className="grid gap-2">{data.payments.slice(0, 5).map((p) => <div key={p.id} className="flex flex-col gap-1 rounded-md bg-slate-50 p-3 text-sm sm:flex-row sm:justify-between"><span className="min-w-0 break-words">{p.customerName}</span><strong>{money(Number(p.amount ?? 0))}</strong></div>)}</div>
         </Card>
       </div>
       <Card>
@@ -118,7 +118,7 @@ export const Dashboard = ({ setPage }: { setPage: (page: PageKey) => void }) => 
         } />
         <div className="grid gap-5 xl:grid-cols-[1.7fr_1fr]">
           <div className="overflow-x-auto pb-2">
-            <div className="flex min-w-[760px] items-end gap-3 rounded-lg bg-slate-50 p-4">
+            <div className="flex min-w-[680px] items-end gap-3 rounded-lg bg-slate-50 p-3 sm:min-w-[760px] sm:p-4">
               {monthlyStats.map((stat) => (
                 <div key={stat.month} className="grid flex-1 gap-2">
                   <div className="flex h-56 items-end justify-center gap-1.5">
@@ -164,7 +164,7 @@ export const Dashboard = ({ setPage }: { setPage: (page: PageKey) => void }) => 
                 <p className="text-sm text-slate-500">{item.customer.ownerName} / {item.customer.area}</p>
                 <p className="mt-1 text-sm font-semibold text-amber-700">{money(item.balance)} outstanding {item.overdueDays > 0 ? `/${item.overdueDays} days overdue` : ''}</p>
               </div>
-              <Button variant="secondary" onClick={() => remindCustomer(item)}><MessageCircle size={16} />WhatsApp</Button>
+              <Button variant="secondary" className="w-full sm:w-auto" onClick={() => remindCustomer(item)}><MessageCircle size={16} />WhatsApp</Button>
             </div>
           ))}
         </div>

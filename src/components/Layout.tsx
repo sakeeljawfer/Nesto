@@ -34,7 +34,7 @@ const pageSubtitles: Record<PageKey, string> = {
 export const Layout = ({ page, setPage, children, onLogout }: { page: PageKey; setPage: (page: PageKey) => void; children: ReactNode; onLogout: () => void }) => {
   const [open, setOpen] = useState(false);
   const sidebar = (
-    <aside className="flex h-full w-72 flex-col border-r border-slate-200 bg-white">
+    <aside className="flex h-full w-[min(18rem,86vw)] flex-col border-r border-slate-200 bg-white">
       <div className="flex items-center gap-3 border-b border-slate-200 px-5 py-5">
         <div className="grid h-11 w-11 place-items-center rounded-lg bg-brand-600 text-white shadow-sm shadow-brand-600/30"><PackageCheck size={22} /></div>
         <div>
@@ -64,13 +64,13 @@ export const Layout = ({ page, setPage, children, onLogout }: { page: PageKey; s
       <div className="hidden lg:block">{sidebar}</div>
       {open && <div className="fixed inset-0 z-40 lg:hidden"><div className="absolute inset-0 bg-slate-950/40" onClick={() => setOpen(false)} /><div className="relative h-full">{sidebar}<button className="absolute right-4 top-4 rounded-md bg-white p-2" onClick={() => setOpen(false)}><X size={18} /></button></div></div>}
       <main className="min-w-0 flex-1">
-        <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur lg:px-6">
+        <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 px-3 py-3 backdrop-blur sm:px-4 lg:px-6">
           <div className="flex items-center justify-between gap-4">
             <div className="flex min-w-0 items-center gap-3">
-              <Button variant="ghost" className="lg:hidden" onClick={() => setOpen(true)}><Menu size={18} /></Button>
+              <Button variant="ghost" className="h-10 w-10 shrink-0 p-0 lg:hidden" onClick={() => setOpen(true)} aria-label="Open navigation"><Menu size={18} /></Button>
               <div className="min-w-0">
-                <h1 className="truncate text-xl font-bold text-slate-950">{nav.find((n) => n.key === page)?.label}</h1>
-                <p className="truncate text-sm text-slate-500">{pageSubtitles[page]}</p>
+                <h1 className="truncate text-lg font-bold text-slate-950 sm:text-xl">{nav.find((n) => n.key === page)?.label}</h1>
+                <p className="hidden truncate text-sm text-slate-500 sm:block">{pageSubtitles[page]}</p>
               </div>
             </div>
             <div className="hidden items-center gap-2 sm:flex">
@@ -79,7 +79,7 @@ export const Layout = ({ page, setPage, children, onLogout }: { page: PageKey; s
             </div>
           </div>
         </header>
-        <div className="mx-auto max-w-[1600px] p-4 lg:p-6">{children}</div>
+        <div className="mx-auto max-w-[1600px] p-3 sm:p-4 lg:p-6">{children}</div>
       </main>
     </div>
   );

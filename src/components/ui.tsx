@@ -35,9 +35,9 @@ export const Badge = ({ children, tone = 'slate' }: { children: ReactNode; tone?
   return <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ${styles[tone]}`}>{children}</span>;
 };
 
-export const Modal = ({ title, children, onClose }: { title: string; children: ReactNode; onClose: () => void }) => (
+export const Modal = ({ title, children, onClose, className = '' }: { title: string; children: ReactNode; onClose: () => void; className?: string }) => (
   <div className="fixed inset-0 z-50 grid place-items-end bg-slate-950/40 p-0 sm:place-items-center sm:p-4">
-    <div className="max-h-[94dvh] w-full overflow-auto rounded-t-lg bg-white shadow-soft sm:max-w-3xl sm:rounded-lg">
+    <div className={`max-h-[94dvh] w-full overflow-auto rounded-t-lg bg-white shadow-soft sm:max-w-3xl sm:rounded-lg ${className}`}>
       <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3 sm:px-5 sm:py-4">
         <h2 className="min-w-0 truncate text-base font-bold text-slate-950 sm:text-lg">{title}</h2>
         <Button variant="ghost" className="h-9 w-9 p-0" onClick={onClose} aria-label="Close"><X size={18} /></Button>

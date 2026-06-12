@@ -10,6 +10,9 @@ import type { Customer, Invoice, InvoiceItem, Product, Settings } from '../types
 
 type DraftItem = InvoiceItem & { lineId: string };
 
+const numberInputValue = (value: number) => value === 0 ? '' : value;
+const numberFromInput = (value: string) => value === '' ? 0 : Number(value);
+
 export const Invoices = () => {
   const data = useLiveQuery(async () => ({ invoices: await db.invoices.orderBy('createdAt').reverse().toArray(), customers: await db.customers.toArray(), products: await db.products.toArray(), settings: await db.settings.get('default') }), []);
   const [creating, setCreating] = useState(false);
@@ -128,7 +131,85 @@ const InvoiceModal = ({ data, onClose, onSaved }: { data: { invoices: Invoice[];
     });
     onSaved();
   };
-  return <Modal title="Create invoice" onClose={onClose} className="sm:max-w-5xl"><div className="grid gap-5"><div className="grid gap-4 md:grid-cols-3"><Field label="Customer"><select className={inputClass} value={customerId} onChange={(e) => setCustomerId(e.target.value)}>{data.customers.map((c) => <option key={c.id} value={c.id}>{c.shopName}</option>)}</select></Field><Field label="Due date"><input className={inputClass} type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} /></Field><Field label="Add product"><select className={inputClass} onChange={(e) => { addItem(e.target.value); e.currentTarget.value = ''; }} defaultValue=""><option value="" disabled>Select product</option>{data.products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></Field></div><div className="grid gap-3">{items.length ? items.map((item) => <div key={item.lineId} className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm shadow-slate-200/60"><div className="mb-3 flex items-start justify-between gap-3"><div className="min-w-0"><p className="break-words text-sm font-bold text-slate-950">{item.productName}</p><p className="mt-1 text-xs text-slate-500">Line total {money(item.quantity * item.unitPrice - item.discount)}</p></div><Button variant="ghost" className="h-9 w-9 shrink-0 p-0 text-red-600 hover:bg-red-50" onClick={() => setItems((list) => list.filter((x) => x.lineId !== item.lineId))} aria-label={`Remove ${item.productName}`}><Trash2 size={17} /></Button></div><div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(90px,1fr)_minmax(90px,1fr)_minmax(140px,1.25fr)_minmax(120px,1fr)_minmax(120px,0.9fr)]"><Field label="Qty"><input className={inputClass} type="number" min="0" inputMode="decimal" value={item.quantity} onChange={(e) => updateItem(item.lineId, { quantity: Number(e.target.value) })} /></Field><Field label="Free qty"><input className={inputClass} type="number" min="0" inputMode="decimal" value={item.freeItems} onChange={(e) => updateItem(item.lineId, { freeItems: Number(e.target.value) })} /></Field><Field label="Unit price"><input className={inputClass} type="number" min="0" inputMode="decimal" value={item.unitPrice} onChange={(e) => updateItem(item.lineId, { unitPrice: Number(e.target.value) })} /></Field><Field label="Discount"><input className={inputClass} type="number" min="0" inputMode="decimal" value={item.discount} onChange={(e) => updateItem(item.lineId, { discount: Number(e.target.value) })} /></Field><div className="rounded-md bg-slate-50 px-3 py-2 sm:col-span-2 lg:col-span-1"><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Line total</p><p className="mt-1 text-base font-bold text-slate-950">{money(item.quantity * item.unitPrice - item.discount)}</p></div></div></div>) : <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-5 text-center text-sm font-medium text-slate-500">Select a product to start adding invoice items.</div>}</div><div className="grid gap-4 md:grid-cols-3"><Field label="Transport / delivery charge"><input className={inputClass} type="number" min="0" inputMode="decimal" value={deliveryCharge} onChange={(e) => setDeliveryCharge(Number(e.target.value))} /></Field><Field label="Tax optional"><input className={inputClass} type="number" min="0" inputMode="decimal" value={tax} onChange={(e) => setTax(Number(e.target.value))} /></Field><Field label="Cash / partial payment"><input className={inputClass} type="number" min="0" inputMode="decimal" value={paidAmount} onChange={(e) => setPaidAmount(Number(e.target.value))} /></Field></div><div className="grid gap-3 rounded-lg bg-slate-50 p-4 sm:flex sm:items-center sm:justify-between"><div><p className="text-sm text-slate-500">{nextNo}</p><p className="text-2xl font-bold">{money(totals.total)}</p></div><div className="grid gap-2 sm:flex"><Button variant="secondary" onClick={onClose}>Cancel</Button><Button onClick={save} disabled={!items.length || !customerId}>Save invoice</Button></div></div></div></Modal>;
+  return (
+    <Modal title="Create invoice" onClose={onClose} className="sm:max-w-5xl">
+      <div className="grid gap-5">
+        <div className="grid gap-4 md:grid-cols-3">
+          <Field label="Customer">
+            <select className={inputClass} value={customerId} onChange={(e) => setCustomerId(e.target.value)}>
+              {data.customers.map((c) => <option key={c.id} value={c.id}>{c.shopName}</option>)}
+            </select>
+          </Field>
+          <Field label="Due date">
+            <input className={inputClass} type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
+          </Field>
+          <Field label="Add product">
+            <select className={inputClass} onChange={(e) => { addItem(e.target.value); e.currentTarget.value = ''; }} defaultValue="">
+              <option value="" disabled>Select product</option>
+              {data.products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+          </Field>
+        </div>
+
+        <div className="grid gap-3">
+          {items.length ? items.map((item) => (
+            <div key={item.lineId} className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm shadow-slate-200/60">
+              <div className="mb-3 flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="break-words text-sm font-bold text-slate-950">{item.productName}</p>
+                  <p className="mt-1 text-xs text-slate-500">Line total {money(item.quantity * item.unitPrice - item.discount)}</p>
+                </div>
+                <Button variant="ghost" className="h-9 w-9 shrink-0 p-0 text-red-600 hover:bg-red-50" onClick={() => setItems((list) => list.filter((x) => x.lineId !== item.lineId))} aria-label={`Remove ${item.productName}`}>
+                  <Trash2 size={17} />
+                </Button>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(90px,1fr)_minmax(90px,1fr)_minmax(140px,1.25fr)_minmax(120px,1fr)_minmax(120px,0.9fr)]">
+                <Field label="Qty">
+                  <input className={inputClass} type="number" min="0" inputMode="decimal" placeholder="Qty" value={numberInputValue(item.quantity)} onChange={(e) => updateItem(item.lineId, { quantity: numberFromInput(e.target.value) })} />
+                </Field>
+                <Field label="Free qty">
+                  <input className={inputClass} type="number" min="0" inputMode="decimal" placeholder="Free" value={numberInputValue(item.freeItems)} onChange={(e) => updateItem(item.lineId, { freeItems: numberFromInput(e.target.value) })} />
+                </Field>
+                <Field label="Unit price">
+                  <input className={inputClass} type="number" min="0" inputMode="decimal" placeholder="Price" value={numberInputValue(item.unitPrice)} onChange={(e) => updateItem(item.lineId, { unitPrice: numberFromInput(e.target.value) })} />
+                </Field>
+                <Field label="Discount">
+                  <input className={inputClass} type="number" min="0" inputMode="decimal" placeholder="Discount" value={numberInputValue(item.discount)} onChange={(e) => updateItem(item.lineId, { discount: numberFromInput(e.target.value) })} />
+                </Field>
+                <div className="rounded-md bg-slate-50 px-3 py-2 sm:col-span-2 lg:col-span-1">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Line total</p>
+                  <p className="mt-1 text-base font-bold text-slate-950">{money(item.quantity * item.unitPrice - item.discount)}</p>
+                </div>
+              </div>
+            </div>
+          )) : <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-5 text-center text-sm font-medium text-slate-500">Select a product to start adding invoice items.</div>}
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-3">
+          <Field label="Transport / delivery charge">
+            <input className={inputClass} type="number" min="0" inputMode="decimal" placeholder="Delivery charge" value={numberInputValue(deliveryCharge)} onChange={(e) => setDeliveryCharge(numberFromInput(e.target.value))} />
+          </Field>
+          <Field label="Tax optional">
+            <input className={inputClass} type="number" min="0" inputMode="decimal" placeholder="Tax" value={numberInputValue(tax)} onChange={(e) => setTax(numberFromInput(e.target.value))} />
+          </Field>
+          <Field label="Cash / partial payment">
+            <input className={inputClass} type="number" min="0" inputMode="decimal" placeholder="Paid amount" value={numberInputValue(paidAmount)} onChange={(e) => setPaidAmount(numberFromInput(e.target.value))} />
+          </Field>
+        </div>
+
+        <div className="grid gap-3 rounded-lg bg-slate-50 p-4 sm:flex sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm text-slate-500">{nextNo}</p>
+            <p className="text-2xl font-bold">{money(totals.total)}</p>
+          </div>
+          <div className="grid gap-2 sm:flex">
+            <Button variant="secondary" onClick={onClose}>Cancel</Button>
+            <Button onClick={save} disabled={!items.length || !customerId}>Save invoice</Button>
+          </div>
+        </div>
+      </div>
+    </Modal>
+  );
 };
 
 const invoiceHtml = (invoice: Invoice, settings?: Settings) => {
